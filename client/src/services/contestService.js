@@ -267,53 +267,92 @@ export async function fetchContestFromCache(id) {
    });
 }
 
-export function getPhaseStats() {
-   return new Promise((resolve, reject) => {
-      openDB().then((db) => {
-         const transaction = db.transaction(STATS_STORE_NAME, 'readonly');
-         const store = transaction.objectStore(STATS_STORE_NAME);
+export async function getTypeStats() {
+   try {
+      const db = await openDB();
+      const transaction = db.transaction(STATS_STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STATS_STORE_NAME);
 
-         const request = store.get('phase');
-         request.onsuccess = () => {
-            resolve(request.result?.data || {});
-         };
-         request.onerror = () => {
-            reject(new Error('Failed to fetch phase stats'));
-         };
-      }).catch(reject); // Reject if openDB fails
-   });
+      const request = store.get('type');
+      const result = await new Promise((resolve, reject) => {
+         request.onsuccess = () => resolve(request.result?.data || {});
+         request.onerror = () => reject(new Error('Failed to fetch type stats'));
+      });
+
+      return result;
+   } catch (error) {
+      throw new Error(error.message || 'An error occurred while fetching type stats');
+   }
 }
 
-export function getTypeStats() {
-   return new Promise((resolve, reject) => {
-      openDB().then((db) => {
-         const transaction = db.transaction(STATS_STORE_NAME, 'readonly');
-         const store = transaction.objectStore(STATS_STORE_NAME);
+export async function getYearStats() {
+   try {
+      const db = await openDB();
+      const transaction = db.transaction(STATS_STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STATS_STORE_NAME);
 
-         const request = store.get('type');
-         request.onsuccess = () => {
-            resolve(request.result?.data || {});
-         };
-         request.onerror = () => {
-            reject(new Error('Failed to fetch type stats'));
-         };
-      }).catch(reject); // Reject if openDB fails
-   });
+      const request = store.get('year');
+      const result = await new Promise((resolve, reject) => {
+         request.onsuccess = () => resolve(request.result?.data || {});
+         request.onerror = () => reject(new Error('Failed to fetch year stats'));
+      });
+
+      return result;
+   } catch (error) {
+      throw new Error(error.message || 'An error occurred while fetching year stats');
+   }
 }
 
-export function getYearStats() {
-   return new Promise((resolve, reject) => {
-      openDB().then((db) => {
-         const transaction = db.transaction(STATS_STORE_NAME, 'readonly');
-         const store = transaction.objectStore(STATS_STORE_NAME);
+export async function getPhaseStats() {
+   try {
+      const db = await openDB();
+      const transaction = db.transaction(STATS_STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STATS_STORE_NAME);
 
-         const request = store.get('year');
-         request.onsuccess = () => {
-            resolve(request.result?.data || {});
-         };
-         request.onerror = () => {
-            reject(new Error('Failed to fetch year stats'));
-         };
-      }).catch(reject); // Reject if openDB fails
-   });
+      const request = store.get('phase');
+      const result = await new Promise((resolve, reject) => {
+         request.onsuccess = () => resolve(request.result?.data || {});
+         request.onerror = () => reject(new Error('Failed to fetch phase stats'));
+      });
+
+      return result;
+   } catch (error) {
+      throw new Error(error.message || 'An error occurred while fetching phase stats');
+   }
+}
+
+export async function getFrozenStats() {
+   try {
+      const db = await openDB();
+      const transaction = db.transaction(STATS_STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STATS_STORE_NAME);
+
+      const request = store.get('frozen');
+      const result = await new Promise((resolve, reject) => {
+         request.onsuccess = () => resolve(request.result?.data || {});
+         request.onerror = () => reject(new Error('Failed to fetch frozen stats'));
+      });
+
+      return result;
+   } catch (error) {
+      throw new Error(error.message || 'An error occurred while fetching frozen stats');
+   }
+}
+
+export async function getDurationStats() {
+   try {
+      const db = await openDB();
+      const transaction = db.transaction(STATS_STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STATS_STORE_NAME);
+
+      const request = store.get('duration');
+      const result = await new Promise((resolve, reject) => {
+         request.onsuccess = () => resolve(request.result?.data || {});
+         request.onerror = () => reject(new Error('Failed to fetch duration stats'));
+      });
+
+      return result;
+   } catch (error) {
+      throw new Error(error.message || 'An error occurred while fetching duration stats');
+   }
 }

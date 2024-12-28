@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import ContestCard from './ContestCard.jsx'; 
 import { fetchFirstXContests, searchContestsBySlug } from '../../services/contestService.js'; 
 
-function ContestList({ limit = 5, page = 1, query = "" }) {
+function ContestList({ limit = 5, page = 1, query = "", handleContestListChange={handleContestListChange} }) {
    const [contests, setContests] = useState([]);
    const [currentPage, setCurrentPage] = useState(page);
 
@@ -20,10 +20,12 @@ function ContestList({ limit = 5, page = 1, query = "" }) {
             if (query !== "") {
                const filteredContests = await searchContestsBySlug(query);
                setContests(filteredContests.slice(currentPage-1*1, currentPage*1+limit-1));
+               handleContestListChange(filteredContests.slice(currentPage-1*1, currentPage*1+limit-1));
                console.log('Fetched filtered contests:', filteredContests); 
             } else {
                const firstXContests = await fetchFirstXContests(currentPage, limit); 
                setContests(firstXContests);
+               handleContestListChange(firstXContests);
                console.log('Fetched contests for page:', currentPage, firstXContests); 
             }
          } catch (error) {

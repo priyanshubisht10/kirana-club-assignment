@@ -1,18 +1,17 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Box, Select } from '@shopify/polaris'; // Polaris components
-import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getPhaseStats, getTypeStats, getYearStats } from '../../services/contestService.js'; // Import the stats functions
+import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { getTypeStats, getYearStats } from '../../services/contestService.js'; // Import the stats functions
 
 function PieChart() {
   const [chartData, setChartData] = useState([]);
-  const [selectedParameter, setSelectedParameter] = useState('phase'); // Default to 'phase'
+  const [selectedParameter, setSelectedParameter] = useState('type');
 
   const handleSelectChange = useCallback((value) => {
     setSelectedParameter(value);
   }, []);
 
   const options = [
-    { label: 'Phase', value: 'phase' },
     { label: 'Type', value: 'type' },
     { label: 'Year', value: 'year' },
   ];
@@ -21,9 +20,6 @@ function PieChart() {
     const fetchStats = async () => {
       let stats = [];
       switch (selectedParameter) {
-        case 'phase':
-          stats = await getPhaseStats();
-          break;
         case 'type':
           stats = await getTypeStats();
           break;
@@ -39,12 +35,13 @@ function PieChart() {
         name: key,
         value: value,
       }));
-      console.log("data", stats);
       setChartData(data);
     };
 
     fetchStats();
   }, [selectedParameter]);
+
+  console.log("c", chartData);
 
   // Define chart colors
   const COLORS = [
@@ -60,7 +57,7 @@ function PieChart() {
   ];
 
   return (
-    <Box> {/* Make the Box square */}
+    <Box>
       <Select
         label="Select Parameter"
         options={options}
@@ -68,26 +65,24 @@ function PieChart() {
         value={selectedParameter}
       />
 
-      <ResponsiveContainer width="100%" height="100%"> {/* Fill the square */}
-        <RechartsPieChart>
-          <Pie
-            data={chartData}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius="45%"
-            fill="#8884d8"
-            label
-          >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </RechartsPieChart>
-      </ResponsiveContainer>
+      <RechartsPieChart width={200} height={200}> {/* Set specific width and height */}
+        <Pie
+          data={chartData}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          outerRadius="45%"
+          fill="#8884d8"
+          label
+        >
+          {chartData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+        {(selectedParameter === 'type') ? <Legend /> : <></>}
+      </RechartsPieChart>
     </Box>
   );
 }

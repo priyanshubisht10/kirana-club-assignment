@@ -26,7 +26,7 @@ function App() {
 
   return (<>
     <header className="text-center">
-      <h1 className="text-3xl font-bold mt-2">Kirana-Club!</h1>
+      <h1 className="text-3xl font-bold mt-2">Kirana-Club-Assignment</h1>
     </header>
     <Router>
       <div className="p-4">
