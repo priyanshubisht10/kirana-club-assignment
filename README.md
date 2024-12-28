@@ -46,4 +46,4 @@ A React-based Contest Dashboard built using Polaris by Shopify and Tailwind CSS.
 - **Recharts**: Interactive and responsive data visualization with bar and pie charts.  
 
 ### Backend  
-- **IndexedDB**: For offline storage and caching data locally.  nk their YouTube accounts using their Channel ID.
+- **IndexedDB**: For offline storage and caching data locally. 
