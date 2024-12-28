@@ -20,7 +20,7 @@ A React-based Contest Dashboard built using Polaris by Shopify and Tailwind CSS.
 ### Dashboard Overview  
 ![Dashboard Overview 1](![image](https://github.com/user-attachments/assets/68b0b5b4-87c6-4744-a869-49e104f1b39d)  
 
-![Dashboard Overview 2](![image](https://github.com/user-attachments/assets/fb44a981-1b47-436c-8ddc-d381c93321d3)  
+![Dashboard Overview 2](![image](https://github.com/user-attachments/assets/0e74952b-3e9f-4c9c-a108-c34a58e9cb30)  
 
 ---
 
