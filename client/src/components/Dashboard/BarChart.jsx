@@ -1,4 +1,3 @@
-import React from "react";
 import { Box } from "@shopify/polaris"; // Polaris Box component
 import {
   BarChart as RechartsBarChart,
@@ -7,7 +6,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   Cell,
 } from "recharts";
 

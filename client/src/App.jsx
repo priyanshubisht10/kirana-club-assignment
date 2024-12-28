@@ -15,6 +15,8 @@ function App() {
       // setContests(storedContests);
     } catch (error) {
       console.error('Error fetching or storing contests:', error);
+      setLoading(false);
+
     } finally {
       setLoading(false);
     }

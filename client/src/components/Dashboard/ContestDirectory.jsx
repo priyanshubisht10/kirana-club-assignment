@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
-import { Select, TextField } from '@shopify/polaris'; // Import Select component from Polaris
+import { Select, TextField, Checkbox } from '@shopify/polaris'; // Import Select component from Polaris
 import Search from '../Common/Search';
 import ContestList from '../Common/ContestList';
 
 function ContestDirectory({ handleContestListChange }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterValue, setFilterValue] = useState(''); // State for filter value
+  const [filterValue, setFilterValue] = useState(''); 
   const [pageLimit, setPageLimit] = useState(10);
-
+  const [showOnlyFav, setShowOnlyFav] = useState(false);
 
   const handleChange = useCallback(
     (newValue) => setPageLimit(newValue),
@@ -16,13 +16,22 @@ function ContestDirectory({ handleContestListChange }) {
 
   const handleSearch = (query) => {
     setSearchQuery(query);
+    setFilterValue(""); 
+    setShowOnlyFav(false); 
   };
 
   const handleFilterChange = (value) => {
-    setFilterValue(value); // Update filter value on dropdown selection
+    setSearchQuery(""); 
+    setFilterValue(value); 
+    setShowOnlyFav(false); 
   };
 
-  // Options for the filter dropdown
+  const handleFavoriate = (newChecked) => {
+    setSearchQuery(""); 
+    setFilterValue(""); 
+    setShowOnlyFav(newChecked); 
+  };
+
   const filterOptions = [
     { label: 'All', value: '' },
     { label: 'IOI', value: 'IOI' },
@@ -31,26 +40,40 @@ function ContestDirectory({ handleContestListChange }) {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex space-x-4">
-        <div className="w-4/5"> {/* 80% width for the search bar */}
+    <div className="space-y-6">
+      <div className="flex space-x-6 items-center">
+        <div className="w-3/5"> 
           <Search onSearch={handleSearch} />
         </div>
 
-        <div className="w-1/5 m-1" > {/* 20% width for the filter dropdown */}
+        <div className="w-1/10"> 
           <Select
             label="Filter by Contest Type"
             options={filterOptions}
             value={filterValue}
             onChange={handleFilterChange} // Handle filter change
+            className="mb-0" 
           />
+        </div>
+
+        <div className="w-1/10">
+          <Checkbox
+            label="Show only favorites"
+            checked={showOnlyFav}
+            onChange={handleFavoriate}
+            className="mb-0" 
+          />
+        </div>
+
+        <div className="w-1/10"> 
           <TextField
             value={pageLimit}
             onChange={handleChange}
             autoComplete="off"
-            placeholder='No. of items per page'
+            placeholder="Items per page"
+            type="number" // Ensure numeric input
+            className="mb-0" // Remove margin for neatness
           />
-
         </div>
       </div>
 
@@ -59,7 +82,8 @@ function ContestDirectory({ handleContestListChange }) {
           query={searchQuery}
           limit={pageLimit}
           handleContestListChange={handleContestListChange}
-          filter={filterValue} // Pass filter value to ContestList
+          filter={filterValue}
+          isFav={showOnlyFav}
         />
       </div>
     </div>

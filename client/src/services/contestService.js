@@ -4,7 +4,7 @@ import slugify from 'slugify';
 const DB_NAME = 'contestDB';
 const STORE_NAME = 'Contests';
 const STATS_STORE_NAME = 'Stats';
-const EXPIRATION_TIME = 5 * 60 * 1000; // 5 minutes
+const EXPIRATION_TIME = 10 * 60 * 1000; // 10 minutes
 const API_URL = 'https://codeforces.com/api/contest.list/';
 
 async function openDB() {
@@ -40,6 +40,7 @@ async function storeContests(contests) {
       const contestData = {
          ...contest,
          slug,
+         fav: false,
          expiration: Date.now() + EXPIRATION_TIME,
       };
       store.put(contestData);
@@ -52,7 +53,6 @@ async function storeStats(contests) {
    const transaction = db.transaction(STATS_STORE_NAME, 'readwrite');
    const store = transaction.objectStore(STATS_STORE_NAME);
 
-   // Initialize stats objects
    const stats = {
       type: {},
       phase: {},
@@ -67,21 +67,17 @@ async function storeStats(contests) {
 
    for (const contest of contests) {
 
-      // Aggregate stats
-      // Type count
+
       stats.type[contest.type] = (stats.type[contest.type] || 0) + 1;
 
-      // Phase count
+ 
       stats.phase[contest.phase] = (stats.phase[contest.phase] || 0) + 1;
 
-      // Frozen count
       stats.frozen[contest.frozen.toString()] += 1;
 
-      // Year count (extract year from startTimeSeconds)
       const year = new Date(contest.startTimeSeconds * 1000).getFullYear();
       stats.year[year] = (stats.year[year] || 0) + 1;
 
-      // Duration stats
       stats.duration.total += contest.durationSeconds;
       stats.duration.byType[contest.type] = (stats.duration.byType[contest.type] || 0) + contest.durationSeconds;
       stats.duration.byPhase[contest.phase] = (stats.duration.byPhase[contest.phase] || 0) + contest.durationSeconds;
@@ -89,29 +85,28 @@ async function storeStats(contests) {
 
    console.log(stats);
 
-   // Store aggregated stats in the Stats object store
    store.put({
-      id: 'type', // Store type stats under a specific key
+      id: 'type', 
       data: stats.type
    });
 
    store.put({
-      id: 'phase', // Store phase stats
+      id: 'phase',
       data: stats.phase
    });
 
    store.put({
-      id: 'frozen', // Store frozen stats
+      id: 'frozen', 
       data: stats.frozen
    });
 
    store.put({
-      id: 'year', // Store year-wise stats
+      id: 'year', 
       data: stats.year
    });
 
    store.put({
-      id: 'duration', // Store duration stats
+      id: 'duration', 
       data: stats.duration
    });
 }
@@ -142,7 +137,6 @@ async function getCachedContests() {
 }
 
 export async function fetchContests() {
-   // Check if valid cache exists
    const cachedContests = await getCachedContests();
    if (cachedContests.length > 0) {
       console.log('Serving from cache');
@@ -155,7 +149,6 @@ export async function fetchContests() {
          console.log('Fetching from API and storing in cache');
          await storeContests(response.data.result);
          await storeStats(response.data.result);
-         // return response.data.result.sort((a, b) => b.startTimeSeconds - a.startTimeSeconds);
       }
    } catch (error) {
       console.error('Error fetching contests:', error);
@@ -183,7 +176,7 @@ export async function fetchFirstXContests(page, limit) {
                if (counter >= skipCount && contests.length < limit) {
                   contests.push(cursor.value); // Add contest to the result
                }
-               counter++; // Increment the counter
+               counter++; 
             }
             cursor.continue(); // Move to the next contest
          } else {
@@ -191,14 +184,13 @@ export async function fetchFirstXContests(page, limit) {
             if (contests.length === 0) {
                try {
                   console.log("hit");
-                  await fetchContests(); // Fetch new contests and store in IndexedDB
-                  // Call fetch again to get the newly stored contests
+                  await fetchContests(); 
                   resolve(await fetchFirstXContests(page, limit));
                } catch (error) {
                   reject(error);
                }
             } else {
-               resolve(contests); // Return the contests for the current page
+               resolve(contests); 
             }
          }
       };
@@ -355,4 +347,73 @@ export async function getDurationStats() {
    } catch (error) {
       throw new Error(error.message || 'An error occurred while fetching duration stats');
    }
+}
+
+export async function getFavoriteContests() {
+   try {
+      // Get the list of favorite contest IDs from localStorage
+      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+
+      // Check if there are no favorites
+      if (favorites.length === 0) {
+         return [];
+      }
+
+      // Fetch the contest data for each favorite contest ID (assuming you have a function to fetch contest by ID)
+      const favoriteContests = await Promise.all(
+         favorites.map(async (contestId) => {
+            const contestData = await fetchContestFromCache(contestId);
+            return contestData;
+         })
+      );
+
+      return favoriteContests;
+   } catch (error) {
+      console.error('Error fetching favorite contests:', error);
+      return [];
+   }
+}
+
+export async function fetchContestsByType(page, limit, contestType) {
+   const db = await openDB();
+   const transaction = db.transaction(STORE_NAME, 'readonly');
+   const store = transaction.objectStore(STORE_NAME);
+   const contests = [];
+
+   const cursorRequest = store.openCursor();
+   let counter = 0;
+   let skipCount = (page - 1) * limit;
+
+   return new Promise((resolve, reject) => {
+      cursorRequest.onsuccess = async (event) => {
+         const cursor = event.target.result;
+
+         if (cursor) {
+            // Check if contest is valid, not expired, and matches the given contest type
+            if (cursor.value.expiration > Date.now() && cursor.value.type === contestType) {
+               if (counter >= skipCount && contests.length < limit) {
+                  contests.push(cursor.value); // Add contest to the result
+               }
+               counter++; // Increment the counter
+            }
+            cursor.continue(); // Move to the next contest
+         } else {
+            // If no contests found, fetch from API
+            if (contests.length === 0) {
+               try {
+                  console.log("hit");
+                  await fetchContests(); // Fetch new contests and store in IndexedDB
+                  // Call fetch again to get the newly stored contests
+                  resolve(await fetchContestsByType(page, limit, contestType));
+               } catch (error) {
+                  reject(error);
+               }
+            } else {
+               resolve(contests); // Return the contests for the current page
+            }
+         }
+      };
+
+      cursorRequest.onerror = (error) => reject(error);
+   });
 }
